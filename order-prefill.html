@@ -1,15 +1,124 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Checkout — Games Planet</title><link rel="stylesheet" href="store.css"></head><body>
-<header class="topbar"><div class="header"><a class="brand" href="index.html">Games<span>Planet</span><small class="tag">Secure order pre-fill</small></a><div style="flex:1"></div><a class="cart-link" href="cart.html">🛒 <span>Cart</span> <b data-cart-count>0</b></a></div></header>
-<h1 class="page-title">Review and Place Your Order</h1><main class="checkout-layout"><section class="panel"><h2>Delivery details</h2><form id="checkoutForm"><div class="form-grid">
-<div class="field"><label for="name">Full name *</label><input id="name" required autocomplete="name"></div><div class="field"><label for="mobile">Mobile number *</label><input id="mobile" required inputmode="numeric" maxlength="10"></div>
-<div class="field"><label for="alt">Alternate number</label><input id="alt" inputmode="numeric" maxlength="10"></div><div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div>
-<div class="field"><label for="house">House / Shop number *</label><input id="house" required></div><div class="field"><label for="landmark">Landmark</label><input id="landmark"></div>
-<div class="field full"><label for="address">Complete address *</label><textarea id="address" required></textarea></div><div class="field"><label for="pincode">PIN code *</label><input id="pincode" required inputmode="numeric" maxlength="6"></div><div class="field"><label for="state">State *</label><input id="state" required></div>
-<div class="field"><label for="city">City / District *</label><input id="city" required></div><div class="field"><label for="postoffice">Post Office</label><select id="postoffice"><option value="">Select after PIN code</option></select></div></div>
-<h2>Delivery method</h2><div id="batteryNote" class="note" hidden>Due battery Item selected no Air or Prime delivery available.</div><div class="delivery-options" id="deliveryOptions">
-<label class="delivery-option"><input type="radio" name="delivery" value="surface" checked><span><b>Surface Delivery</b><br><small>Economical road delivery</small></span></label>
-<label class="delivery-option" data-fast><input type="radio" name="delivery" value="air"><span><b>Air Delivery</b><br><small>Faster air shipment</small></span></label>
-<label class="delivery-option" data-fast><input type="radio" name="delivery" value="prime"><span><b>Prime Delivery</b><br><small>Priority handling</small></span></label></div>
-<div class="field" style="margin-top:14px"><label for="courier">Courier</label><select id="courier"></select></div></form></section>
-<aside class="panel summary"><h2>Your order</h2><div class="checkout-items" id="checkoutItems"></div><div class="summary-row"><span>Products</span><b id="productTotal">₹0</b></div><div class="summary-row"><span>Chargeable weight</span><b id="weight">0 kg</b></div><div class="summary-row"><span>Delivery</span><b id="deliveryCharge">₹0</b></div><hr><div class="summary-row" style="font-size:20px"><span>Order total</span><b id="grandTotal">₹0</b></div><button class="order-btn" id="upiBtn" type="button">Pay with UPI</button><button class="order-btn whatsapp" id="whatsappBtn" type="button">Send Order on WhatsApp</button><p style="font-size:12px;color:#687078">Please review quantity and address before continuing.</p></aside></main>
-<script src="products.js"></script><script src="checkout.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Secure Checkout — Games Planet</title>
+  <meta name="description" content="Complete your Games Planet order with address, delivery ETA and secure UPI payment.">
+  <link rel="stylesheet" href="store.css">
+</head>
+<body class="checkout-page">
+  <header class="topbar checkout-topbar">
+    <div class="header">
+      <a class="brand" href="index.html">Games<span>Planet</span><small class="tag">Secure order checkout</small></a>
+      <div class="checkout-security">🔒 Secure checkout</div>
+      <a class="cart-link" href="cart.html">🛒 <span>Cart</span> <b data-cart-count>0</b></a>
+    </div>
+  </header>
+
+  <div class="checkout-progress" aria-label="Checkout progress">
+    <span class="done"><b>1</b> Cart</span><i></i>
+    <span class="active"><b>2</b> Address & payment</span><i></i>
+    <span><b>3</b> Confirmation</span>
+  </div>
+
+  <main class="amazon-checkout">
+    <section class="checkout-content">
+      <article class="checkout-card">
+        <div class="step-title"><span>1</span><div><h2>Delivery address</h2><p>PIN code se city, state, distance aur ETA automatically calculate hoga.</p></div></div>
+        <form id="checkoutForm">
+          <div class="form-grid">
+            <div class="field"><label for="name">Full name *</label><input id="name" required autocomplete="name"></div>
+            <div class="field"><label for="mobile">Mobile number *</label><input id="mobile" required inputmode="numeric" maxlength="10" autocomplete="tel"></div>
+            <div class="field"><label for="alt">Alternate mobile</label><input id="alt" inputmode="numeric" maxlength="10"></div>
+            <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div>
+            <div class="field"><label for="house">House / Shop number *</label><input id="house" required></div>
+            <div class="field"><label for="landmark">Landmark</label><input id="landmark"></div>
+            <div class="field full"><label for="address">Street / Area / Village *</label><textarea id="address" required rows="3"></textarea></div>
+            <div class="field pin-field"><label for="pincode">PIN code *</label><input id="pincode" required inputmode="numeric" maxlength="6" autocomplete="postal-code"><small id="pinStatus">Enter a 6-digit PIN code</small></div>
+            <div class="field"><label for="state">State *</label><input id="state" required></div>
+            <div class="field"><label for="city">District / City *</label><input id="city" required></div>
+            <div class="field"><label for="postoffice">Post Office</label><input id="postoffice" list="postOfficeList" placeholder="Select or type manually"><datalist id="postOfficeList"></datalist></div>
+          </div>
+        </form>
+
+        <div class="eta-panel" id="etaPanel" hidden>
+          <div><span>📍</span><b id="distanceText">—</b><small>Distance from Rampur 244901</small></div>
+          <div><span>🟢</span><b id="prepaidEta">—</b><small id="prepaidDates">Prepaid delivery</small></div>
+          <div><span>🔴</span><b id="codEta">—</b><small id="codDates">COD delivery</small></div>
+        </div>
+      </article>
+
+      <article class="checkout-card">
+        <div class="step-title"><span>2</span><div><h2>Choose payment mode</h2><p>Prepaid में पूरा amount और COD में केवल advance अभी pay होगा.</p></div></div>
+        <div class="payment-mode-grid">
+          <label class="payment-mode selected"><input type="radio" name="paymentMode" value="prepaid" checked><span class="pay-icon">₹</span><div><b>Prepaid UPI</b><small>Pay complete order amount now</small></div><em>Recommended</em></label>
+          <label class="payment-mode"><input type="radio" name="paymentMode" value="cod"><span class="pay-icon">📦</span><div><b>Partial COD</b><small>Pay advance now, balance on delivery</small></div></label>
+        </div>
+        <div class="cod-rule" id="codRule">COD availability order value के अनुसार automatically check होगी.</div>
+      </article>
+
+      <article class="checkout-card">
+        <div class="step-title"><span>3</span><div><h2>Delivery speed & courier</h2><p>Chargeable weight और selected service के अनुसार delivery charge बनेगा.</p></div></div>
+        <div id="batteryNote" class="note" hidden>Due battery Item selected no Air or Prime delivery available.</div>
+        <div class="delivery-options checkout-delivery">
+          <label class="delivery-option selected"><input type="radio" name="delivery" value="surface" checked><span><b>Surface Delivery</b><small>Economical road delivery</small></span></label>
+          <label class="delivery-option" data-fast><input type="radio" name="delivery" value="air"><span><b>Air Delivery</b><small>Trackon Air / Shree Maruti Air</small></span></label>
+          <label class="delivery-option" data-fast><input type="radio" name="delivery" value="prime"><span><b>Prime Delivery</b><small>Trackon priority handling</small></span></label>
+        </div>
+        <div class="field courier-field"><label for="courier">Courier company</label><select id="courier"></select></div>
+      </article>
+
+      <article class="checkout-card payment-card" id="paymentCard">
+        <div class="step-title"><span>4</span><div><h2>Pay with UPI</h2><p>QR और UPI App button में payable amount automatically update होता है.</p></div></div>
+        <div class="upi-layout">
+          <div class="qr-box">
+            <img id="upiQr" alt="UPI payment QR code">
+            <b id="qrAmount">₹0</b>
+            <small id="qrCaption">Prepaid order payment</small>
+          </div>
+          <div class="upi-details">
+            <span class="secure-pill">✓ Amount-linked UPI payment</span>
+            <h3 id="payableHeading">Pay ₹0</h3>
+            <p>UPI ID manually enter करके भी payment कर सकते हैं:</p>
+            <div class="upi-copy"><code id="upiId">paytmqr5hyx5o@ptys</code><button type="button" id="copyUpi">Copy</button></div>
+            <p class="payee">Payee: <b>Surender Kaur</b> · Games Planet</p>
+            <a class="order-btn upi-open" id="openUpi" href="#">Open UPI App</a>
+            <button class="secondary-payment" type="button" id="downloadQr">Download QR</button>
+            <small class="payment-help">Payment app में payee name और amount verify करके ही payment करें.</small>
+          </div>
+        </div>
+        <div class="utr-row">
+          <div class="field"><label for="utr">UPI Transaction / UTR number</label><input id="utr" placeholder="Payment ke baad reference number dalein"></div>
+          <label class="paid-check"><input type="checkbox" id="paidCheck"> मैंने payment कर दिया है</label>
+        </div>
+      </article>
+    </section>
+
+    <aside class="checkout-sidebar">
+      <section class="panel order-final">
+        <h2>Order Summary</h2>
+        <div class="checkout-items" id="checkoutItems"></div>
+        <div class="summary-row"><span>Products</span><b id="productTotal">₹0</b></div>
+        <div class="summary-row"><span>Chargeable weight</span><b id="weight">0 kg</b></div>
+        <div class="summary-row"><span>Delivery</span><b id="deliveryCharge">₹0</b></div>
+        <div class="summary-row" id="codFeeRow" hidden><span>COD charge</span><b id="codFee">₹0</b></div>
+        <hr>
+        <div class="summary-row order-total"><span>Order total</span><b id="grandTotal">₹0</b></div>
+        <div class="pay-now-summary">
+          <span id="payNowLabel">Pay now</span><strong id="payNowAmount">₹0</strong>
+          <small id="restOnDelivery" hidden></small>
+        </div>
+        <button class="order-btn whatsapp" id="whatsappBtn" type="button">Confirm Order on WhatsApp</button>
+        <p class="final-note">Payment verification WhatsApp/UTR confirmation के बाद होगी. No Return, No Refund, No Replacement.</p>
+      </section>
+      <a class="back-to-cart" href="cart.html">← Return to cart</a>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="products.js"></script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="checkout.js"></script>
+</body>
+</html>

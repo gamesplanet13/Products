@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer Feedback — Games Planet</title><link rel="stylesheet" href="store.css"></head><body>
+<header class="topbar"><div class="header"><a class="brand" href="index.html">Games<span>Planet</span><small class="tag">Customer feedback</small></a><div style="flex:1"></div><a class="cart-link" href="cart.html">🛒 <span>Cart</span> <b data-cart-count>0</b></a></div></header>
+<main class="feedback-shell"><section class="panel feedback-panel"><a class="back" href="index.html">← Back to store</a><h1>Share Product Feedback</h1><p>Your feedback is checked against order details before it appears publicly.</p><form id="feedbackForm" class="form-grid">
+<div class="field full"><label for="reviewProduct">Product *</label><select id="reviewProduct" required></select></div>
+<div class="field"><label for="reviewName">Your name *</label><input id="reviewName" required maxlength="60"></div>
+<div class="field"><label for="reviewMobile">Order mobile number *</label><input id="reviewMobile" required inputmode="numeric" maxlength="10"></div>
+<div class="field"><label for="reviewOrder">Order reference</label><input id="reviewOrder" maxlength="40"></div>
+<div class="field"><label for="reviewRating">Rating *</label><select id="reviewRating" required><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Average</option><option value="2">2 — Poor</option><option value="1">1 — Very poor</option></select></div>
+<div class="field full"><label for="reviewText">Your feedback *</label><textarea id="reviewText" required minlength="10" maxlength="700" placeholder="Tell us about product quality, compatibility and service."></textarea></div>
+<div class="field full"><label class="consent"><input type="checkbox" id="reviewConsent" required> I confirm this is my genuine experience and allow Games Planet to publish it after verification.</label></div>
+<div class="field full"><button class="order-btn" type="submit">Submit for approval</button></div></form><div class="success-box" id="feedbackSuccess" hidden><h2>Feedback submitted</h2><p>It is pending order verification and approval. Thank you.</p></div></section></main>
+<footer class="footer"><b>Games Planet</b><p>Only approved customer feedback appears on product pages.</p></footer>
+<script src="products.js"></script><script src="feedback.js"></script></body></html>

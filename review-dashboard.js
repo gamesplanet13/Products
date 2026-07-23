@@ -1,0 +1,10 @@
+const REVIEW_KEY="gp_product_reviews_v1";
+const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let active="pending";
+const read=()=>{try{return JSON.parse(localStorage.getItem(REVIEW_KEY)||"[]")}catch{return []}};
+const save=x=>{localStorage.setItem(REVIEW_KEY,JSON.stringify(x));render()};
+function setStatus(id,status){save(read().map(r=>r.id===id?{...r,status}:r))}
+function removeReview(id){if(confirm("Delete this feedback permanently?"))save(read().filter(r=>r.id!==id))}
+function render(){const list=read().filter(r=>r.status===active),box=document.getElementById("reviewQueue");box.innerHTML=list.length?list.map(r=>{const p=GP_PRODUCTS.find(x=>x.id===r.productId);return `<article class="panel moderation-card"><div class="moderation-top"><div><span class="status-pill ${r.status}">${r.status}</span><h2>${escapeHtml(p?.name||r.productId)}</h2></div><strong>${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</strong></div><p>${escapeHtml(r.text)}</p><dl><dt>Name</dt><dd>${escapeHtml(r.name)}</dd><dt>Mobile</dt><dd>${escapeHtml(r.mobile)}</dd><dt>Order ref</dt><dd>${escapeHtml(r.orderRef||"Not provided")}</dd></dl><div class="moderation-actions">${r.status!=="approved"?`<button class="approve" data-approve="${r.id}">Approve as Verified</button>`:""}${r.status!=="rejected"?`<button data-reject="${r.id}">Reject</button>`:""}<button class="danger" data-delete="${r.id}">Delete</button></div></article>`}).join(""):`<div class="panel empty"><h2>No ${active} reviews</h2><p>Submitted feedback will appear here.</p></div>`;document.querySelectorAll("[data-approve]").forEach(b=>b.onclick=()=>setStatus(b.dataset.approve,"approved"));document.querySelectorAll("[data-reject]").forEach(b=>b.onclick=()=>setStatus(b.dataset.reject,"rejected"));document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>removeReview(b.dataset.delete))}
+document.querySelectorAll("[data-status]").forEach(b=>b.onclick=()=>{active=b.dataset.status;document.querySelectorAll("[data-status]").forEach(x=>x.classList.toggle("active",x===b));render()});
+render();

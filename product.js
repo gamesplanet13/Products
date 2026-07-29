@@ -4,7 +4,14 @@ const readCart=()=>{try{return JSON.parse(localStorage.getItem(CART_KEY)||"{}")}
 const writeCart=c=>{localStorage.setItem(CART_KEY,JSON.stringify(c));updateCartCount()};
 const updateCartCount=()=>document.querySelectorAll("[data-cart-count]").forEach(e=>e.textContent=Object.values(readCart()).reduce((a,b)=>a+b,0));
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function addToCart(id,buy=false){const c=readCart();c[id]=(c[id]||0)+1;writeCart(c);if(buy)location.href=`order-prefill.html?buyNow=${encodeURIComponent(id)}`;else toast("Added to cart")}
+function saveOrderSummary(c){
+  const items=Object.entries(c).map(([id,quantity])=>{
+    const item=GP_PRODUCTS.find(x=>x.id===id);if(!item)return null;
+    return{name:item.name,quantity,unitPrice:item.price,lineTotal:item.price*quantity,unitWeight:item.weight||100,lineWeight:(item.weight||100)*quantity};
+  }).filter(Boolean);
+  localStorage.setItem("gp_order_summary",JSON.stringify({items}));
+}
+function addToCart(id,buy=false){const c=readCart();c[id]=(c[id]||0)+1;writeCart(c);if(buy){saveOrderSummary(c);location.href="order-prefill.html?source=cart"}else toast("Added to cart")}
 function toast(message){const t=document.getElementById("toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1700)}
 function approvedReviews(id){try{return JSON.parse(localStorage.getItem(REVIEW_KEY)||"[]").filter(r=>r.productId===id&&r.status==="approved")}catch{return []}}
 function stars(n){return `<span class="stars" aria-label="${n} out of 5 stars">${"★".repeat(n)}${"☆".repeat(5-n)}</span>`}

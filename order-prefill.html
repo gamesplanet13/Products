@@ -1118,7 +1118,25 @@ function submitOrder(){
   const missing=required.filter(id=>!String(document.getElementById(id).value||"").trim());
   if(missing.length){alert("Please fill all required customer and delivery details.");document.getElementById(missing[0]).focus();return;}
   if(gpzInvoice()&&!document.getElementById("buyerBusinessName").value.trim()){alert("Please enter Customer / Business Name for GST invoice.");return;}
-  window.open(`https://wa.me/917983624797?text=${encodeURIComponent(buildWhatsAppTemplate())}`,"_blank","noopener,noreferrer");
+  const message=buildWhatsAppTemplate();
+  const saved={
+    orderId:document.getElementById("orderId").value,
+    createdAt:new Date().toISOString(),
+    customer:{name:document.getElementById("name").value,mobile:document.getElementById("mobile").value,email:document.getElementById("email").value},
+    paymentMode:gpzCurrentOrder.paymentMode,
+    paymentStatus:gpzCurrentOrder.paymentMode==="cod"?"Advance submitted — verification pending":"Payment submitted — verification pending",
+    amountPaid:gpzCurrentOrder.advanceAmount,
+    restOnDelivery:gpzCurrentOrder.restAmount,
+    total:gpzCurrentOrder.grandTotal,
+    courier:gpzCurrentOrder.courier,
+    items:gpzCurrentOrder.items,
+    message
+  };
+  let orders=[];try{orders=JSON.parse(localStorage.getItem("gp_customer_orders_v1")||"[]")}catch(e){}
+  const at=orders.findIndex(x=>x.orderId===saved.orderId);if(at>=0)orders[at]=saved;else orders.unshift(saved);
+  localStorage.setItem("gp_customer_orders_v1",JSON.stringify(orders.slice(0,100)));
+  window.open(`https://wa.me/917983624797?text=${encodeURIComponent(message)}`,"_blank","noopener,noreferrer");
+  setTimeout(()=>location.href="orders.html",450);
 }
 function gpzInitialize(){
   let stored=null;

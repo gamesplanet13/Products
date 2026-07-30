@@ -14,23 +14,23 @@
 
   addVariants("m88","GPZ M88 GameStick","GameSticks","m88 (1).jpeg",
     "Premium retro GameStick with wireless controllers and HDMI output.",450,
-    [["128GB",5999]],"Popular");
+    [["128GB",6299]],"Popular");
   addVariants("m66","GPZ M66 GameStick","GameSticks","m66 (1).jpg",
-    "Compact plug-and-play retro GameStick.",400,[["64GB",2999],["128GB",5499],["256GB",7999]]);
+    "Compact plug-and-play retro GameStick.",400,[["64GB",2999],["128GB",5499],["256GB",7499]]);
   addVariants("gs5-mini","GPZ GS5 Mini","GameSticks","gs5mini (1).jpeg",
     "Wireless retro GameStick with multiple storage options.",450,
-    [["64GB",3699],["128GB",6199],["256GB",8699]],"Best seller");
+    [["64GB",3699],["128GB",6199],["256GB",8199]],"Best seller");
   addVariants("gs5-pro","GS5 Pro — Vayava V3 OS","GameSticks","../gs5-pro.png",
     "Premium Vayava V3 OS GameStick with two wireless controllers.",500,
     [["64GB Unbranded Card",3999],["64GB HP Original Card",4999],
-     ["128GB Unbranded Card",6499],["128GB SanDisk Original Card",7499],
+     ["128GB Unbranded Card",5999],["128GB SanDisk Original Card",6999],
      ["256GB SanDisk Original Card",8999]],"New");
   addVariants("m22","GPZ M22 V3 GameStick","GameSticks","M22.jpeg",
     "Retro GameStick with HDMI output and wireless controllers.",450,
-    [["64GB",3499],["128GB",5999],["256GB",8499]]);
+    [["64GB",3499],["128GB",5999],["256GB",7999]]);
   addVariants("m33","GPZ M33 GameStick","GameSticks","M33.jpeg",
     "Value retro gaming stick with wireless controllers.",430,
-    [["64GB",2699],["128GB",5199],["256GB",7699]]);
+    [["64GB",2699],["128GB",5199],["256GB",7199]]);
   addVariants("p5","GPZ GameStick Pro P5 (AOKO) — 2024 Edition","GameSticks","M15.jpeg",
     "Budget plug-and-play retro GameStick with two wireless controllers.",400,[["64GB",1899]]);
 
@@ -38,22 +38,22 @@
     "Vayava GD-series retro gaming stick.",450,[["64GB",2399]]);
   addVariants("gd35","Vayava GD35 Standard","GD Series","Gd35.png",
     "Premium Vayava GD35 edition.",500,
-    [["64GB",4599],["128GB",7099],["256GB",9599]]);
+    [["64GB",4599],["128GB",7300],["256GB",9300]]);
   addVariants("gd35-gta","Vayava GD35 GTA San Andreas Edition","GD Series","gd30v3 special edition.png",
     "Special GTA San Andreas themed edition.",500,
-    [["64GB",6599],["128GB",9099],["256GB",11599]],"Special edition");
+    [["64GB",6599],["128GB",9300],["256GB",11300]],"Special edition");
 
   addVariants("g10","GameBox G10 Plus","GameBox","G10.jpeg",
     "Android-style retro GameBox for TV gaming.",550,[["64GB",3599]]);
   addVariants("g11","GameBox G11 Pro Regular","GameBox","G11pro.jpeg",
     "G11 Pro GameBox with multiple storage options.",600,
-    [["64GB",4599],["128GB",7099],["256GB",9599]]);
+    [["64GB",4599],["128GB",7300],["256GB",9300]]);
   addVariants("g11-special","GameBox G11 Pro Special Edition","GameBox","G11pro.png",
     "Special edition G11 Pro GameBox.",600,
-    [["64GB",6699],["128GB",9199],["256GB",11699]],"Special edition");
+    [["64GB",6699],["128GB",9598],["256GB",11798]],"Special edition");
   addVariants("g11-gta","GameBox G11 Pro GTA San Andreas Edition","GameBox","g11pro (3).png",
     "GTA San Andreas themed G11 Pro edition.",600,
-    [["64GB",6599],["128GB",9099],["256GB",11599]],"GTA edition");
+    [["64GB",6599],["128GB",9300],["256GB",11300]],"GTA edition");
 
   addVariants("r35s","R35S Handheld Console","Handheld Consoles","R35s.jpeg",
     "Portable retro handheld gaming console.",350,[["64GB",2699]]);
@@ -77,12 +77,14 @@
   const extraCategories=["GameSticks","GD Series","GameBox","Handheld Consoles","Consoles"];
   extraCategories.forEach(c=>{if(!window.GP_CATEGORIES.includes(c))window.GP_CATEGORIES.splice(-3,0,c)});
   const details={
+    m88:{videos:["https://youtu.be/gLm7LZjTMOE"],shops:[["Amazon","https://amzn.to/4c9TJgu"]]},
     p5:{videos:["https://youtu.be/UUH26hD7J70"],shops:[["Amazon","https://amzn.to/4fmYjqB"]]},
     m33:{videos:["https://youtu.be/h838JHwNI1k","https://youtu.be/0dW4go5qaDQ","https://youtu.be/TnLw-wLWJ6A"],shops:[["Amazon","https://amzn.to/404bJlz"],["Flipkart","https://bit.ly/m33newG"]]},
     m22:{videos:["https://youtu.be/bEt1GvDk8JY","https://youtu.be/TnLw-wLWJ6A"],shops:[["Amazon","https://amzn.to/4hQN6j6"],["Flipkart","https://bit.ly/GPZm22OG"]]},
     "gs5-mini":{videos:["https://youtu.be/62x06g3BOg0"],shops:[["Amazon 1","https://amzn.to/3OMStGM"],["Amazon 2","https://amzn.to/4pANnvw"]]},
     m66:{videos:["https://youtube.com/shorts/3xcWzwoMTHQ","https://youtube.com/shorts/4SrJ1fDr-Dk"]},
-    r35s:{videos:["https://youtu.be/eOEMkNKLSKU","https://youtube.com/shorts/qbL9E1wrnF8","https://youtube.com/shorts/CHH8qQM0lKY"]},
+    r35s:{videos:["https://youtu.be/eOEMkNKLSKU","https://youtube.com/shorts/qbL9E1wrnF8","https://youtube.com/shorts/CHH8qQM0lKY","https://youtube.com/shorts/Fsz4pGTIST4","https://youtube.com/shorts/nALo0xkM-gQ","https://youtube.com/shorts/yO90CCga3qM","https://youtube.com/shorts/1IGUjyJoj8c","https://www.instagram.com/reel/C5Xy-b2xHx0/","https://www.instagram.com/reel/C5ZkTNfP9uE/"]},
+    "gs5-pro":{videos:["https://youtube.com/shorts/8nwpswQv4WA"]},
     "r36-ultra":{videos:["https://youtube.com/shorts/OHoFvn3oqnM","https://youtube.com/shorts/qnUDHWKeYtc"]},
     r36s:{videos:["https://youtube.com/shorts/2ZB-PLrirWg"],shops:[["Amazon","https://amzn.to/4aV2Fpg"]]},
     g90:{videos:["https://youtube.com/shorts/nf6_3Ng1RAs","https://youtube.com/shorts/oRcp6N67Wbg"]},

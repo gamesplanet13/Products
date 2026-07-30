@@ -1,6 +1,11 @@
 .external-links{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0 18px}
 .external-links a{background:#232f3e;color:#fff;border-radius:18px;padding:9px 13px;font-size:13px;font-weight:700}
 .external-links a:last-child{background:#128c4a}
+.product-subtitle{font-weight:800;color:#c45500;line-height:1.5}
+.mrp{background:#fff4e5;padding:9px;border-radius:6px}.mrp b{color:#b12704}
+.emulator-chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 18px}
+.emulator-chips span{background:#e8f1f8;border:1px solid #c1d7e8;border-radius:15px;padding:6px 10px;font-size:12px;font-weight:700}
+.policy-list li::marker{color:#b12704}
 .main-photo img{cursor:zoom-in}
 .rich-list{padding-left:20px;line-height:1.7}
 .video-section{margin:20px 0}

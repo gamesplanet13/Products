@@ -13,7 +13,7 @@ const products=[
   P("fmcb-9","FunTuna Memory Card — PS2 Slim 9XXXX","PS2",600,"fmcb-9xxxx.jpeg","8MB prepared FunTuna card for supported PS2 Slim 9XXXX models.",25),
   P("ps2-memory","PS2 8MB Blank Memory Card","PS2",369,"ps28mb.jpeg","Blank 8MB memory card for PlayStation 2.",25),
   P("ps2-arcade-usb","32GB USB for PS2 with Arcade Games","PS2",549,"32gbusb.jpeg","Ready-to-use USB game drive for supported PS2 setups.",10),
-  P("ps2-skin","PS2 Slim Sticker / Skin","PS2",60,"opl10.jpeg","Protective decorative skin for PS2 Slim console.",10),
+  P("ps2-skin","PS2 Slim Sticker / Skin","PS2",60,"ps2-slim-sticker-ai.png","Protective decorative skin for PS2 Slim console.",10),
   P("ps2-hdmi","HDMI Converter for PS2","PS2",319,"ps2hdmi.jpeg","Connect PS2 video output to an HDMI display.",80,{badge:"Easy setup"}),
   P("ps2-av","AV Cable for PS2","PS2",99,"ps2av.jpeg","Composite red, white and yellow AV cable for PS2.",70),
   P("ps2-wired-controller","PS2 Wired Controller (Replica)","PS2",375,"ps2wire.jpeg","Classic wired controller for PlayStation 2.",250,{badge:"Popular"}),

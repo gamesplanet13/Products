@@ -1121,9 +1121,12 @@ function submitOrder(){
   window.open(`https://wa.me/917983624797?text=${encodeURIComponent(buildWhatsAppTemplate())}`,"_blank","noopener,noreferrer");
 }
 function gpzInitialize(){
-  const product=GPZ_PARAMS.get("product")||"PS2 Product";
-  const variant=GPZ_PARAMS.get("variant")||"";
-  const base=Number(GPZ_PARAMS.get("base")||0);
+  let stored=null;
+  try{stored=JSON.parse(localStorage.getItem("gp_order_summary")||"null");}catch(e){}
+  const cartItems=stored&&Array.isArray(stored.items)?stored.items:[];
+  const product=cartItems.length?cartItems.map(i=>`${i.name} × ${Number(i.quantity)||1}`).join(" | "):(GPZ_PARAMS.get("product")||"Games Planet Product");
+  const variant=cartItems.length>1?"Multiple selected products":(GPZ_PARAMS.get("variant")||"As selected");
+  const base=cartItems.length?cartItems.reduce((s,i)=>s+(Number(i.lineTotal)||0),0):Number(GPZ_PARAMS.get("base")||0);
   document.getElementById("product").value=product;
   document.getElementById("variant").value=variant;
   document.getElementById("basePrice").value=base;

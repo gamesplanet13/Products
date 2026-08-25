@@ -971,6 +971,63 @@ document.getElementById("postoffice").addEventListener("change",()=>{ updatePrim
 <script id="gpz-fmcb-final-calculator">
 /* Correct FMCB/USB/Combo + PS2 Accessories checkout calculator */
 const GPZ_PARAMS=new URLSearchParams(location.search);
+/* Snapshot the cart BEFORE checkout calculations overwrite gp_order_summary. */
+const GPZ_INITIAL_CART=(()=>{
+  try{
+    const saved=JSON.parse(localStorage.getItem("gp_order_summary")||"null");
+    return saved&&Array.isArray(saved.items)?saved.items.map(i=>({...i})):[];
+  }catch(_e){return [];}
+})();
+function gpzIncomingCartItems(){
+  const explicitProduct=(GPZ_PARAMS.get("product")||"").trim();
+  const fromCart=GPZ_PARAMS.get("source")==="cart" || !explicitProduct;
+  return fromCart?GPZ_INITIAL_CART:[];
+}
+function gpzSplitProductVariant(item){
+  item=item||{};
+  let raw=String(item.productName||item.product||item.title||item.name||"").trim();
+  const explicitParts=[item.variant,item.model,item.storage,item.pack,item.version]
+    .map(v=>String(v||"").trim()).filter(Boolean);
+  let variant=[...new Set(explicitParts)].join(" + ");
+  let product=raw;
+  /* Our checkout-generated item format uses an em dash between product and variant. */
+  if(!variant && raw.includes(" — ")){
+    const at=raw.indexOf(" — ");
+    product=raw.slice(0,at).trim();
+    variant=raw.slice(at+3).trim();
+  }
+  return {product:product||raw,variant};
+}
+function gpzActualCartSummary(){
+  const cart=gpzIncomingCartItems();
+  const productMap=new Map();
+  const variants=[];
+  const addProduct=(name,qty)=>{
+    name=String(name||"").trim(); if(!name)return;
+    const key=name.toLowerCase();
+    const old=productMap.get(key)||{name,qty:0};
+    old.qty+=Math.max(1,Number(qty)||1); productMap.set(key,old);
+  };
+  if(cart.length){
+    cart.forEach(item=>{
+      const pv=gpzSplitProductVariant(item);
+      addProduct(pv.product, item.quantity);
+      if(pv.variant && !variants.some(v=>v.toLowerCase()===pv.variant.toLowerCase())) variants.push(pv.variant);
+    });
+  }else{
+    const product=(GPZ_PARAMS.get("product")||"").trim();
+    const variant=(GPZ_PARAMS.get("variant")||"").trim();
+    if(product) addProduct(product,Math.max(1,Number(GPZ_PARAMS.get("quantity")||1)));
+    if(variant) variants.push(variant);
+  }
+  const addonRows=[...document.querySelectorAll("#items .addon-row")].filter(row=>
+    String(row.querySelector(".i-name")?.value||"").trim()!=="TRACKON.IN PRIME COURIER SERVICE"
+  );
+  const addonQty=addonRows.reduce((s,row)=>s+Math.max(0,Number(row.querySelector(".i-qty")?.value||0)),0);
+  const products=[...productMap.values()].map(x=>x.name+(x.qty>1?` x${x.qty}`:""));
+  if(addonQty>0) products.push("Add-ons"+(addonQty>1?` x${addonQty}`:""));
+  return {product:products.join(" + "),variant:variants.join(" + ")};
+}
 const GPZ_GST_COURIERS=["Delhivery.com","BlueDart","Ecom Express","XpressBees"];
 const GPZ_SURFACE=["Trackon.in","ShreeMaruti.com","DTDC.in","Speed Post",...GPZ_GST_COURIERS];
 const GPZ_AIR=["Trackon.in","ShreeMaruti.com"];
@@ -1014,19 +1071,22 @@ function gpzInferWeight(product,variant){
   return weight;
 }
 function gpzBaseItems(){
-  const product=GPZ_PARAMS.get("product")||document.getElementById("product").value||"PS2 Product";
-  const variant=GPZ_PARAMS.get("variant")||document.getElementById("variant").value||"";
+  const cart=gpzIncomingCartItems();
+  if(cart.length) return cart.map(i=>({
+    name:String(i.name||i.productName||i.product||i.title||""),
+    quantity:Number(i.quantity)||1,
+    unitPrice:Number(i.unitPrice)||0,
+    lineTotal:Number(i.lineTotal)||((Number(i.unitPrice)||0)*(Number(i.quantity)||1)),
+    unitWeight:Number(i.unitWeight)||0,
+    lineWeight:Number(i.lineWeight)||((Number(i.unitWeight)||0)*(Number(i.quantity)||1))
+  })).filter(i=>i.name);
+
+  const product=(GPZ_PARAMS.get("product")||document.getElementById("product").value||"").trim();
+  const variant=(GPZ_PARAMS.get("variant")||document.getElementById("variant").value||"").trim();
+  if(!product) return [];
   const base=Number(GPZ_PARAMS.get("base")||document.getElementById("basePrice").value||0);
   const quantity=Math.max(1,Number(GPZ_PARAMS.get("quantity")||1));
   const suppliedWeight=Number(GPZ_PARAMS.get("weight")||0);
-  let stored=null;
-  try{stored=JSON.parse(localStorage.getItem("gp_order_summary")||"null");}catch(e){}
-  const storedMatches=stored&&Array.isArray(stored.items)&&stored.items.length&&
-    (GPZ_PARAMS.get("source")==="cart"||!GPZ_PARAMS.get("product")||stored.items.some(i=>String(i.name).toLowerCase()===product.toLowerCase()));
-  if(storedMatches) return stored.items.map(i=>({
-    name:i.name,quantity:Number(i.quantity)||1,unitPrice:Number(i.unitPrice)||0,
-    lineTotal:Number(i.lineTotal)||0,unitWeight:Number(i.unitWeight)||0,lineWeight:Number(i.lineWeight)||0
-  }));
   const unitPrice=quantity?base/quantity:base;
   const unitWeight=suppliedWeight?suppliedWeight/quantity:gpzInferWeight(product,variant);
   return [{name:variant?`${product} — ${variant}`:product,quantity,unitPrice,lineTotal:base,unitWeight,lineWeight:unitWeight*quantity}];
@@ -1206,44 +1266,10 @@ function gpzUpiLink(amount,note){
 }
 function productWithAddons(){return gpzCurrentOrder?gpzCurrentOrder.items.map(i=>`${i.name} x${i.quantity}`).join(", "):document.getElementById("product").value;}
 function gpzWhatsAppProductVariant(){
-  let product=(GPZ_PARAMS.get("product")||document.getElementById("product").value||"").trim();
-  let variant=(GPZ_PARAMS.get("variant")||document.getElementById("variant").value||"").trim();
-
-  // Cart / stored orders may keep the first item as "Product — Variant".
-  // Use it only as a fallback; explicit product/variant parameters always win.
-  if((!product||/^PS2 Product$/i.test(product)) && gpzCurrentOrder?.items?.length){
-    product=String(gpzCurrentOrder.items[0].name||"").trim();
-  }
-  if(!variant && product){
-    const split=product.match(/^(.*?)\s*[—–|]\s*(.+)$/);
-    if(split){
-      product=split[1].trim();
-      variant=split[2].trim();
-    }
-  }
-  // If storage is embedded in the product name, move storage/model text to Variant.
-  if(!variant && product){
-    const storage=product.match(/\b(\d+(?:\.\d+)?\s*(?:GB|TB)(?:\s*\([^)]*\))?(?:\s+(?:SSD|HDD|TOP PACK|OPTIONAL PACK|UNBRANDED|ORIGINAL|SANDISK|HP))?)\b/i);
-    if(storage){
-      variant=storage[1].trim();
-      product=(product.slice(0,storage.index)+product.slice(storage.index+storage[0].length))
-        .replace(/\s{2,}/g," ").replace(/[—–|:-]+\s*$/," ").trim();
-    }
-  }
-  return {
-    product:product||"Games Planet Product",
-    variant:variant||"As selected"
-  };
+  return gpzActualCartSummary();
 }
 function gpzOrderVariant(){
-  const raw=(document.getElementById("variant").value||"").trim();
-  const fat=raw.match(/PS2\s+Fat(?:\s*\([^)]*\))?/i);
-  const slim7=raw.match(/PS2\s+Slim\s+7(?:0{3}|x{4})\s*(?:Series|\([^)]*\))?/i);
-  const slim9=raw.match(/PS2\s+Slim\s+9(?:0{3}|x{4})\s*(?:Series|\([^)]*\))?/i);
-  if(slim7) return "PS2 Slim 7xxxx";
-  if(slim9) return "PS2 Slim 9xxxx";
-  if(fat) return "PS2 Fat";
-  return "PS2";
+  return gpzActualCartSummary().variant;
 }
 function buildWhatsAppTemplate(){
   const o=gpzCurrentOrder; if(!o) return "";
@@ -1267,7 +1293,7 @@ function buildWhatsAppTemplate(){
   const productPrice=Math.max(0,o.productTotal-addonTotal);
   const basePrice=o.productTotal+o.courierCharge+o.vasCharge;
   const itemLines=o.items.flatMap((i,n)=>[
-    `${n+1}. ${i.name}`,
+    `${n+1}. ${i.name}${Number(i.quantity)>1?` x${i.quantity}`:""}`,
     `Quantity: ${i.quantity}`,
     `Per Price: ${gpzMoney(i.unitPrice)}`,
     `Product Total: ${gpzMoney(i.lineTotal)}`,
@@ -1332,11 +1358,14 @@ function submitOrder(){
   window.open(`https://wa.me/917983624797?text=${encodeURIComponent(buildWhatsAppTemplate())}`,"_blank","noopener,noreferrer");
 }
 function gpzInitialize(){
-  const product=GPZ_PARAMS.get("product")||"PS2 Product";
-  const variant=GPZ_PARAMS.get("variant")||"";
-  const base=Number(GPZ_PARAMS.get("base")||0);
-  document.getElementById("product").value=product;
-  document.getElementById("variant").value=variant;
+  const cart=gpzIncomingCartItems();
+  const summary=gpzActualCartSummary();
+  const base=cart.length
+    ? cart.reduce((s,i)=>s+(Number(i.lineTotal)||((Number(i.unitPrice)||0)*(Number(i.quantity)||1))),0)
+    : Number(GPZ_PARAMS.get("base")||0);
+
+  document.getElementById("product").value=summary.product;
+  document.getElementById("variant").value=summary.variant;
   document.getElementById("basePrice").value=base;
   setPackBadge(GPZ_PARAMS.get("pack")||"");
   document.getElementById("orderId").value=orderIdNow();

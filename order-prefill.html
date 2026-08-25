@@ -124,7 +124,7 @@
         <input id="city" placeholder="District/City" readonly>
       </div>
       <div>
-        <div class="label">Post Office</div>
+        <div class="label">Post Office <span id="postOfficeRequirement" style="font-weight:600">(Optional)</span></div>
         <select id="postoffice"><option value="">Select Post Office</option></select>
       </div>
     </div>
@@ -247,6 +247,7 @@
 
   <div class="card">
     <span class="badge">Payment Method</span>
+    <span id="modeBadge" class="badge right mode-pre">Mode: Prepaid</span>
     <div class="choice-grid">
       <label class="choice"><input type="radio" name="paymentMode" value="prepaid" checked onchange="setMode('prepaid')"> 🟢 Prepaid</label>
       <label class="choice" id="codChoice"><input type="radio" name="paymentMode" value="cod" onchange="setMode('cod')"> 🟠 Cash on Delivery</label>
@@ -990,6 +991,16 @@ function gpzEscape(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","
 function gpzSelected(name,fallback){
   return document.querySelector(`input[name="${name}"]:checked`)?.value||fallback;
 }
+function gpzIsSpeedPost(){
+  return (document.getElementById("courier")?.value||"").trim().toLowerCase()==="speed post";
+}
+function gpzUpdatePostOfficeRequirement(){
+  const required=gpzIsSpeedPost();
+  const label=document.getElementById("postOfficeRequirement");
+  const select=document.getElementById("postoffice");
+  if(label) label.textContent=required?"(Required for Speed Post)":"(Optional)";
+  if(select) select.required=required;
+}
 function gpzInferWeight(product,variant){
   const text=`${product} ${variant}`.toUpperCase();
   let weight=25;
@@ -1095,6 +1106,7 @@ function syncCourierOptions(){
   document.getElementById("courierServiceNote").textContent=/^\d{6}$/.test(pin)
     ? `Pincode ${pin}: mode के अनुसार courier list दिखाई गई है। Final serviceability courier booking के समय confirm होगी।`
     : "पहले valid 6-digit pincode भरें। Final courier serviceability destination pincode पर depend करेगी।";
+  gpzUpdatePostOfficeRequirement();
   computeTotals();
 }
 function setMode(nextMode){
@@ -1193,6 +1205,36 @@ function gpzUpiLink(amount,note){
   return "upi://pay?"+new URLSearchParams({pa:"gnsl.khalsa@okhdfcbank",pn:"GAMES PLANET ZONE",am:String(amount),cu:"INR",tn:note}).toString();
 }
 function productWithAddons(){return gpzCurrentOrder?gpzCurrentOrder.items.map(i=>`${i.name} x${i.quantity}`).join(", "):document.getElementById("product").value;}
+function gpzWhatsAppProductVariant(){
+  let product=(GPZ_PARAMS.get("product")||document.getElementById("product").value||"").trim();
+  let variant=(GPZ_PARAMS.get("variant")||document.getElementById("variant").value||"").trim();
+
+  // Cart / stored orders may keep the first item as "Product — Variant".
+  // Use it only as a fallback; explicit product/variant parameters always win.
+  if((!product||/^PS2 Product$/i.test(product)) && gpzCurrentOrder?.items?.length){
+    product=String(gpzCurrentOrder.items[0].name||"").trim();
+  }
+  if(!variant && product){
+    const split=product.match(/^(.*?)\s*[—–|]\s*(.+)$/);
+    if(split){
+      product=split[1].trim();
+      variant=split[2].trim();
+    }
+  }
+  // If storage is embedded in the product name, move storage/model text to Variant.
+  if(!variant && product){
+    const storage=product.match(/\b(\d+(?:\.\d+)?\s*(?:GB|TB)(?:\s*\([^)]*\))?(?:\s+(?:SSD|HDD|TOP PACK|OPTIONAL PACK|UNBRANDED|ORIGINAL|SANDISK|HP))?)\b/i);
+    if(storage){
+      variant=storage[1].trim();
+      product=(product.slice(0,storage.index)+product.slice(storage.index+storage[0].length))
+        .replace(/\s{2,}/g," ").replace(/[—–|:-]+\s*$/," ").trim();
+    }
+  }
+  return {
+    product:product||"Games Planet Product",
+    variant:variant||"As selected"
+  };
+}
 function gpzOrderVariant(){
   const raw=(document.getElementById("variant").value||"").trim();
   const fat=raw.match(/PS2\s+Fat(?:\s*\([^)]*\))?/i);
@@ -1214,6 +1256,16 @@ function buildWhatsAppTemplate(){
     `Customer GSTIN: ${document.getElementById("buyerGstin").value||""}`,
     `GST Billing Address: ${document.getElementById("buyerBillingAddress").value||""}`
   ]:["GST Invoice: Excluded"];
+  const waPV=gpzWhatsAppProductVariant();
+  const addonTotal=[...document.querySelectorAll("#items .addon-row")].reduce((sum,row)=>{
+    const name=(row.querySelector(".i-name")?.value||"").trim();
+    if(name==="TRACKON.IN PRIME COURIER SERVICE") return sum;
+    const price=Number(row.querySelector(".i-price")?.value||0);
+    const qty=Number(row.querySelector(".i-qty")?.value||0);
+    return sum+(price*qty);
+  },0);
+  const productPrice=Math.max(0,o.productTotal-addonTotal);
+  const basePrice=o.productTotal+o.courierCharge+o.vasCharge;
   const itemLines=o.items.flatMap((i,n)=>[
     `${n+1}. ${i.name}`,
     `Quantity: ${i.quantity}`,
@@ -1229,9 +1281,15 @@ function buildWhatsAppTemplate(){
     `Alt Mobile: ${document.getElementById("altMobile").value}`,`Email: ${document.getElementById("email").value}`,
     `Address: ${address}`,`Landmark: ${document.getElementById("landmark").value}`,
     `Pincode: ${document.getElementById("pincode").value}`,`State: ${document.getElementById("state").value}`,
-    `District/City: ${document.getElementById("city").value}`,`Post office: ${document.getElementById("postoffice").value}`,"",
-    "Product: Arcade Accessories","Variant:",
+    `District/City: ${document.getElementById("city").value}`,
+    ...(document.getElementById("postoffice").value?[`Post office: ${document.getElementById("postoffice").value}`]:[]),"",
+    `Product: ${waPV.product}`,`Variant: ${waPV.variant}`,
+    `Product Price: ${gpzMoney(productPrice)}`,
+    `Add-ons: ${gpzMoney(addonTotal)}`,
     `Courier Company: ${o.courier}`,
+    `Courier Charges: ${gpzMoney(o.courierCharge)}`,
+    `VAS (2%): ${o.vasApplies?gpzMoney(o.vasCharge):gpzMoney(0)}`,
+    `Base Price: ${gpzMoney(basePrice)}`,
     `Discount: ${gpzMoney(o.discountApplied)}`,
     `Amount Paid: ${gpzMoney(o.advanceAmount)}`,
     ...(isCod?[`Rest on Delivery: ${gpzMoney(o.restAmount)}`]:[]),"",
@@ -1240,7 +1298,12 @@ function buildWhatsAppTemplate(){
     `📅 Estimated Delivery: ${isCod?(document.getElementById("dateRangeCOD")?.value||""):(document.getElementById("dateRange").value||"")}`,"",
     "📦 SELECTED PRODUCTS & COMPLETE BREAKDOWN","",...itemLines,
     `Total Quantity: ${o.totalQuantity}`,
-    `Products Total: ${gpzMoney(o.productTotal)}`,
+    `Product Price: ${gpzMoney(productPrice)}`,
+    `Add-ons Total: ${gpzMoney(addonTotal)}`,
+    `Products Total (Product + Add-ons): ${gpzMoney(o.productTotal)}`,
+    `Courier Charges: ${gpzMoney(o.courierCharge)}`,
+    `VAS (2%): ${o.vasApplies?gpzMoney(o.vasCharge):gpzMoney(0)}`,
+    `Base Price (Product + Add-ons + Courier + VAS): ${gpzMoney(basePrice)}`,
     `Discount Coupon: ${o.discountCode||"Not used"}`,
     `Discount Applied: ${o.discountApplied?"-"+gpzMoney(o.discountApplied):gpzMoney(0)}`,
     ...gstLines,
@@ -1251,17 +1314,20 @@ function buildWhatsAppTemplate(){
     `Volumetric Weight: ${o.volumetricKg.toFixed(2)}kg`,
     `Chargeable Weight: ${o.chargeableKg.toFixed(2)}kg`,
     `Courier Company: ${o.courier}`,
-    `Total Courier Charges: ${gpzMoney(o.courierCharge)}`,
-    `VAS (2%): ${o.vasApplies?gpzMoney(o.vasCharge):"Not Applicable"}`,
     `Final Total Amount: ${gpzMoney(o.grandTotal)}`,
     `Total Amount Paid: ${gpzMoney(o.advanceAmount)}`,
     ...(isCod?[`Total Rest on Delivery: ${gpzMoney(o.restAmount)}`]:[])
   ].join("\n");
 }
 function submitOrder(){
-  const required=["name","mobile","address","pincode","state","city","postoffice"];
+  const required=["name","mobile","address","pincode","state","city"];
   const missing=required.filter(id=>!String(document.getElementById(id).value||"").trim());
   if(missing.length){alert("Please fill all required customer and delivery details.");document.getElementById(missing[0]).focus();return;}
+  if(gpzIsSpeedPost()&&!String(document.getElementById("postoffice").value||"").trim()){
+    alert("Please select Post Office for Speed Post.");
+    document.getElementById("postoffice").focus();
+    return;
+  }
   if(gpzInvoice()&&!document.getElementById("buyerBusinessName").value.trim()){alert("Please enter Customer / Business Name for GST invoice.");return;}
   window.open(`https://wa.me/917983624797?text=${encodeURIComponent(buildWhatsAppTemplate())}`,"_blank","noopener,noreferrer");
 }
@@ -1285,5 +1351,58 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./pincode-offline-sw.js').catch(()=>{}));
 }
 </script>
-<script>window.GPZ_PROJECT_KIND='products';</script><script src="gpz-order-enhancements.js"></script></body>
+<script>window.GPZ_PROJECT_KIND='products';</script><script src="gpz-order-enhancements.js"></script>
+<script id="gpz-courier-total-hotfix">
+(function(){
+  const baseCompute=window.computeTotals;
+  window.computeTotals=function(){
+    if(typeof baseCompute==="function") baseCompute();
+    if(!window.gpzCurrentOrder && typeof gpzCurrentOrder==="undefined") return;
+    const o=(typeof gpzCurrentOrder!=="undefined")?gpzCurrentOrder:window.gpzCurrentOrder;
+    if(!o) return;
+
+    const courier=document.getElementById("courier")?.value||o.courier||"Trackon.in";
+    const payment=(typeof gpzMode==="function")?gpzMode():(o.paymentMode||"prepaid");
+    const speed=(typeof gpzSpeed==="function")?gpzSpeed():(o.deliverySpeed||"surface");
+    const kg=Number(o.chargeableKg)||0.5;
+    const courierBase=(typeof gpzCourierRate==="function")?Number(gpzCourierRate(courier,speed,payment,kg))||0:Number(o.courierBaseCharge)||0;
+    const courierGst=Number(o.courierGst)||0;
+    const courierTotal=courierBase+courierGst;
+    const discountedProducts=Number(o.discountedProducts)||0;
+    const productGst=Number(o.productGst)||0;
+    const vas=Number(o.vasCharge)||0;
+    const grand=Math.ceil(discountedProducts+productGst+courierTotal+vas);
+    const paid=payment==="cod"?Math.min(grand,Math.max(500,Math.ceil(grand*0.10))):grand;
+    const rest=payment==="cod"?Math.max(0,grand-paid):0;
+
+    o.courier=courier;
+    o.courierBaseCharge=courierBase;
+    o.courierGst=courierGst;
+    o.courierCharge=courierTotal;
+    o.grandTotal=grand;
+    o.advanceAmount=paid;
+    o.restAmount=rest;
+    try{localStorage.setItem("gp_order_summary",JSON.stringify(o));}catch(_e){}
+
+    const setText=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+    if(typeof gpzMoney==="function"){
+      setText("sumCourierBase",gpzMoney(courierBase));
+      setText("sumCourierGst",gpzMoney(courierGst));
+      setText("sumCourier",gpzMoney(courierTotal));
+      setText("sumGrand",gpzMoney(grand));
+      setText("sumPaid",gpzMoney(paid));
+      setText("sumRest",gpzMoney(rest));
+    }
+    const pay=document.getElementById("payNow");
+    if(pay && typeof gpzUpiLink==="function") pay.href=gpzUpiLink(paid,payment==="cod"?"COD Advance":"Prepaid Order");
+  };
+
+  // Recalculate once after all scripts have loaded, and on courier/speed/mode changes.
+  window.addEventListener("load",()=>{try{window.computeTotals();}catch(e){console.error(e);}});
+  document.getElementById("courier")?.addEventListener("change",()=>{gpzUpdatePostOfficeRequirement();window.computeTotals();});
+  document.querySelectorAll('input[name="deliverySpeed"],input[name="paymentMode"],input[name="gstInvoice"]').forEach(el=>
+    el.addEventListener("change",()=>setTimeout(()=>window.computeTotals(),0))
+  );
+})();
+</script></body>
 </html>

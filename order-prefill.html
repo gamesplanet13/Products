@@ -1210,7 +1210,9 @@ function gpzIncomingCartItems(){
 
   try{
     const stored=JSON.parse(localStorage.getItem("gp_order_summary")||"null");
-    if(stored&&stored.source==="cart"&&Array.isArray(stored.items)&&stored.items.length) return stored.items;
+    // Compatibility: older Products/cart.js saved items without source:"cart".
+    // When checkout URL explicitly says source=cart, accept any valid saved item array.
+    if(stored&&Array.isArray(stored.items)&&stored.items.length) return stored.items;
   }catch(e){
     console.warn("Could not read saved checkout cart.",e);
   }

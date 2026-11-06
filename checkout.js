@@ -20,7 +20,7 @@ let pincodeData={},cart={},orderId=makeOrderId(),lastEstimate=null;
 try{cart=JSON.parse(localStorage.getItem(CART_KEY)||"{}")}catch{}
 
 const el=id=>document.getElementById(id);
-const entries=()=>Object.entries(cart).map(([id,qty])=>[GP_PRODUCTS.find(p=>p.id===id),qty]).filter(x=>x[0]);
+const entries=()=>Object.entries(cart).map(([id,qty])=>[GP_PRODUCTS.find(p=>p.id===id),qty]).filter(x=>window.GP_PRODUCT_VISIBLE?.(x[0])??!!x[0]);
 const selectedPayment=()=>document.querySelector('input[name="paymentMode"]:checked')?.value||"prepaid";
 const selectedDelivery=()=>document.querySelector('input[name="delivery"]:checked')?.value||"surface";
 function saveCart(){localStorage.setItem(CART_KEY,JSON.stringify(cart));render()}

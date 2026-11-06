@@ -116,3 +116,6 @@ if(black) black.gallery=["pxn-v3-pro-black.jpeg","pxn-v3-pro-orange.jpeg"];
 if(orange) orange.gallery=["pxn-v3-pro-orange.jpeg","pxn-v3-pro-black.jpeg"];
 
 window.GP_PRODUCTS=products;
+
+// Stock and archival flags are retained in the catalogue, never shown in customer listings.
+window.GP_PRODUCT_VISIBLE=(p,v='')=>!!p&&p.hiddenFromStore!==true&&p.available!==false&&p.active!==false&&p.status!=='unavailable'&&p.stock!==0&&(!v||p.variantStocks?.[v]!==0);

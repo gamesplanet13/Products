@@ -6,12 +6,12 @@ const updateCartCount=()=>document.querySelectorAll("[data-cart-count]").forEach
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function saveOrderSummary(c){
   const items=Object.entries(c).map(([id,quantity])=>{
-    const item=GP_PRODUCTS.find(x=>x.id===id);if(!item)return null;
+    const item=GP_PRODUCTS.find(x=>x.id===id);if(!window.GP_PRODUCT_VISIBLE(item))return null;
     return{name:item.name,quantity,unitPrice:item.price,lineTotal:item.price*quantity,unitWeight:item.weight||100,lineWeight:(item.weight||100)*quantity};
   }).filter(Boolean);
   localStorage.setItem("gp_order_summary",JSON.stringify({items}));
 }
-function addToCart(id,buy=false){const c=readCart();c[id]=(c[id]||0)+1;writeCart(c);if(buy){saveOrderSummary(c);location.href="order-prefill.html?source=cart"}else toast("Added to cart")}
+function addToCart(id,buy=false){if(!window.GP_PRODUCT_VISIBLE(GP_PRODUCTS.find(x=>x.id===id)))return;const c=readCart();c[id]=(c[id]||0)+1;writeCart(c);if(buy){saveOrderSummary(c);location.href="order-prefill.html?source=cart"}else toast("Added to cart")}
 function toast(message){const t=document.getElementById("toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1700)}
 function approvedReviews(id){try{return JSON.parse(localStorage.getItem(REVIEW_KEY)||"[]").filter(r=>r.productId===id&&r.status==="approved")}catch{return []}}
 function stars(n){return `<span class="stars" aria-label="${n} out of 5 stars">${"★".repeat(n)}${"☆".repeat(5-n)}</span>`}
@@ -19,7 +19,7 @@ function mediaEmbed(url){const s=String(url||"");let m=s.match(/youtu\.be\/([^?&
 function renderReviews(p){const reviews=approvedReviews(p.id),box=document.getElementById("reviewList");box.innerHTML=reviews.length?reviews.map(r=>`<article class="review"><div>${stars(Number(r.rating))} <b>${escapeHtml(r.name)}</b> <span class="verified">✓ Verified Purchase</span></div><p>${escapeHtml(r.text)}</p><small>Approved customer feedback</small></article>`).join(""):`<div class="review-empty"><h3>No verified reviews yet</h3><p>Only feedback from confirmed customers is published. Be the first to share your experience.</p></div>`;document.getElementById("reviewCount").textContent=`${reviews.length} approved review${reviews.length===1?"":"s"}`}
 function relatedCard(p){return `<article class="card compact-card"><a class="photo product-link" href="product.html?id=${encodeURIComponent(p.id)}"><img src="images/${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"></a><div class="info"><span class="category">${escapeHtml(p.category)}</span><a class="title product-link" href="product.html?id=${encodeURIComponent(p.id)}">${escapeHtml(p.name)}</a><div class="price"><small>₹</small>${p.price.toLocaleString("en-IN")}</div></div></article>`}
 const id=new URLSearchParams(location.search).get("id"),p=GP_PRODUCTS.find(x=>x.id===id);
-if(!p){document.getElementById("productPage").innerHTML=`<div class="panel empty"><h1>Product not found</h1><p>The product link may be outdated.</p><a class="checkout-btn" href="index.html">Return to store</a></div>`}
+if(!window.GP_PRODUCT_VISIBLE(p)){document.getElementById("productPage").innerHTML=`<div class="panel empty"><h1>Product not found</h1><p>The product link may be outdated.</p><a class="checkout-btn" href="index.html">Return to store</a></div>`}
 else{
   document.title=`${p.name} — Games Planet`;
   const battery=p.battery?`<div class="product-alert">Due battery Item selected no Air or Prime delivery available.</div>`:"";
@@ -49,7 +49,9 @@ else{
   document.getElementById("imageClose").onclick=closeLightbox;
   document.getElementById("imageLightbox").onclick=e=>{if(e.target.id==="imageLightbox")closeLightbox()};
   renderReviews(p);
-  document.getElementById("relatedGrid").innerHTML=GP_PRODUCTS.filter(x=>x.id!==p.id&&x.category===p.category).slice(0,5).map(relatedCard).join("");
+  document.getElementById("relatedGrid").innerHTML=GP_PRODUCTS.filter(x=>window.GP_PRODUCT_VISIBLE(x)&&x.id!==p.id&&x.category===p.category).slice(0,5).map(relatedCard).join("");
 }
 document.getElementById("detailSearch").onsubmit=e=>{e.preventDefault();const q=document.getElementById("detailSearchInput").value.trim();location.href=`index.html?search=${encodeURIComponent(q)}`};
 updateCartCount();
+
+window.GP_APPLY_SHARED_INVENTORY=()=>{const id=new URLSearchParams(location.search).get('id');const p=GP_PRODUCTS.find(x=>x.id===id);if(p&&!window.GP_PRODUCT_VISIBLE(p))location.replace('index.html');};

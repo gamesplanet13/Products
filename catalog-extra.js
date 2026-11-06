@@ -111,5 +111,10 @@
     p.policy=policy;
     window.GP_PRODUCTS.push(p);
   });
+  window.GP_PRODUCTS.filter(p=>p.id==="r36s-64gb").forEach(p=>{
+    p.availableColors=["Transparent Purple","Transparent White","Transparent Black"];
+    p.colorSelectionRequired=true;
+    p.features=Array.from(new Set([...(p.features||[]),"Available colours: Transparent Purple, Transparent White, Transparent Black"]));
+  });
   window.GP_PRODUCTS.forEach(p=>{p.policy=policy;p.whatsapp=p.whatsapp||`https://wa.me/917983624797?text=${encodeURIComponent("I want to buy "+p.name)}`;p.videos=p.videos||[];p.shops=p.shops||[]});
 })();

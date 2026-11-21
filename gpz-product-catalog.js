@@ -8,8 +8,8 @@ window.GPZ_PRODUCT_CATALOG = [
   {
     "name": "10 Core Wire (Per Meter)",
     "price": 50,
-    "weight": 0,
-    "size": ""
+    "weight": 37.5,
+    "size": "7 × 7 × 2 cm per 2 m"
   },
   {
     "name": "10 Socket Extension Board",
@@ -92,25 +92,25 @@ window.GPZ_PRODUCT_CATALOG = [
   {
     "name": "Coin Acrylic Machine",
     "price": 195,
-    "weight": 0,
+    "weight": 165,
     "size": ""
   },
   {
     "name": "Coin Acrylic Machine with Switch",
     "price": 240,
-    "weight": 0,
+    "weight": 170,
     "size": ""
   },
   {
     "name": "Coin Drop Switch Button",
     "price": 45,
-    "weight": 0,
+    "weight": 25,
     "size": ""
   },
   {
     "name": "Coin Packet",
     "price": 210,
-    "weight": 0,
+    "weight": 630,
     "size": ""
   },
   {
@@ -368,7 +368,7 @@ window.GPZ_PRODUCT_CATALOG = [
   {
     "name": "Push Button (Imported)",
     "price": 46,
-    "weight": 0,
+    "weight": 15,
     "size": ""
   },
   {
@@ -404,13 +404,13 @@ window.GPZ_PRODUCT_CATALOG = [
   {
     "name": "Rasila Handle (With Switch)",
     "price": 260,
-    "weight": 0,
+    "weight": 320,
     "size": ""
   },
   {
     "name": "Rasila Handle (Without Switch)",
     "price": 200,
-    "weight": 0,
+    "weight": 300,
     "size": ""
   },
   {
